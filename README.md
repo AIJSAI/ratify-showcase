@@ -1,12 +1,12 @@
 # Ratify
 
-> Production multi-tenant compliance SaaS for wine, beer, and spirits producers — automated tax filing, real-time order gating, and regulatory intelligence across all 51 US jurisdictions.
+> Production multi-tenant compliance SaaS for wine, beer, and spirits producers: automated tax filing, real-time order gating, and regulatory intelligence across all 51 US jurisdictions.
 
 ---
 
 **This repository documents the architecture and design decisions for Ratify. Source code is available upon request for interview processes.**
 
-📄 [Portfolio](https://jamesshehan.dev) · 📬 [Request Source Access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20—%20Ratify)
+📄 [Portfolio](https://jamesshehan.dev) · 📬 [Request Source Access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify)
 
 ---
 
@@ -16,10 +16,10 @@ Selling beverage alcohol in the US means complying with a maze of federal and st
 
 - **50 states + DC**, each with different licenses, tax rates, volume limits, product restrictions, filing frequencies, and dry communities
 - **Two distribution channels** (direct-to-consumer and three-tier wholesale), each with its own rule set
-- **Constant regulatory change** — 10+ compliance alerts per year from the Wine Institute alone
-- **Zero affordable automation** — Sovos ShipCompliant sells eight separate products at enterprise prices; small producers fall back to spreadsheets, consultants, and lawyers
+- **Constant regulatory change**: 10+ compliance alerts per year from the Wine Institute alone
+- **Zero affordable automation**: Sovos ShipCompliant sells eight separate products at enterprise prices; small producers fall back to spreadsheets, consultants, and lawyers
 
-82% of US wineries produce fewer than 5,000 cases per year. They can't afford $500+/month compliance software or $200–400/hour consultants. The same maze hits breweries, cideries, and distilleries.
+82% of US wineries produce fewer than 5,000 cases per year. They can't afford $500+/month compliance software or $200-400/hour consultants. The same maze hits breweries, cideries, and distilleries.
 
 ## Architecture
 
@@ -35,7 +35,7 @@ flowchart LR
         Web["App Router<br/>Server Components"]
     end
 
-    subgraph RailwayLayer["Railway — FastAPI"]
+    subgraph RailwayLayer["Railway: FastAPI"]
         API["REST API"]
         Rules["Rules Engine<br/>(deterministic)"]
         Workers["Background Workers<br/>(filing, monitoring)"]
@@ -82,7 +82,7 @@ flowchart LR
 |-----------|----------|
 | **FastAPI on Railway** | Long-running compliance jobs, no serverless duration limits, full Python AI ecosystem |
 | **Next.js 16 on Vercel** | Server Components, edge rendering, fast dashboard surface |
-| **Rules Engine** | Deterministic compliance checks and tax calculations — sub-100ms, no LLM in the critical path |
+| **Rules Engine** | Deterministic compliance checks and tax calculations, sub-100ms, no LLM in the critical path |
 | **LiteLLM Proxy** | 100+ model providers, hard budget caps, per-tenant cost tracking, automatic fallback routing |
 | **Anthropic Citations API** | Two-pass extraction with verbatim source citations for auditable regulatory analysis |
 | **Supabase Postgres + RLS** | Row-Level Security multi-tenancy, pgvector for RAG, temporal tables for audit reconstruction |
@@ -105,9 +105,9 @@ flowchart LR
 
 ### 1. Compliance Must Be Deterministic, But Regulatory Text Is Unstructured
 
-**Challenge**: Compliance checks must be 100% reliable, fast (<100ms), and auditable. LLM latency (1–5 seconds) is unacceptable for real-time order gating, and hallucination risk is unacceptable for tax calculations. But the underlying regulatory source material (state statutes, TTB rulings, DOR bulletins) is unstructured text scattered across 50+ government sites.
+**Challenge**: Compliance checks must be 100% reliable, fast (<100ms), and auditable. LLM latency (1-5 seconds) is unacceptable for real-time order gating, and hallucination risk is unacceptable for tax calculations. But the underlying regulatory source material (state statutes, TTB rulings, DOR bulletins) is unstructured text scattered across 50+ government sites.
 
-**Solution**: Strict separation of concerns (D-009). The deterministic rules engine handles every compliance check and tax calculation in-line — order gating, tax math, license expiration. AI sits *next to* the critical path, not inside it. The LLM does what it's good at: natural-language compliance questions, regulatory document extraction, expansion planning, and report synthesis. An AI provider outage degrades the assistive features but never breaks the core product.
+**Solution**: Strict separation of concerns (D-009). The deterministic rules engine handles every compliance check and tax calculation in-line: order gating, tax math, license expiration. AI sits *next to* the critical path, not inside it. The LLM does what it's good at: natural-language compliance questions, regulatory document extraction, expansion planning, and report synthesis. An AI provider outage degrades the assistive features but never breaks the core product.
 
 ### 2. Verifiable Extraction Across 51 Jurisdictions
 
@@ -117,7 +117,7 @@ flowchart LR
 
 ### 3. Multi-Tenant Isolation With pgvector
 
-**Challenge**: B2B SaaS requires per-tenant data isolation. pgvector HNSW indexes return candidates *before* SQL WHERE filters apply — a naive query for "tax rules" could surface another tenant's documents in the candidate set before filtering them out.
+**Challenge**: B2B SaaS requires per-tenant data isolation. pgvector HNSW indexes return candidates *before* SQL WHERE filters apply, so a naive query for "tax rules" could surface another tenant's documents in the candidate set before filtering them out.
 
 **Solution**: Row-Level Security at the database layer (D-007). Every tenant-scoped table carries a `tenant_id` column with an RLS policy keyed off `auth.uid()`. The hybrid search RPC applies the tenant filter *inside* the search query, not as a post-filter. Connection-level tenant context is set via `set_config('app.tenant_id', ...)` at request start. Combined with jurisdiction-agnostic data modelling (D-010), isolation holds even as the data model evolves to support new jurisdictions and beverage categories.
 
@@ -130,7 +130,7 @@ flowchart LR
 | D-008 | LiteLLM for model-agnostic AI | 100+ providers, automatic fallback during AI outages, cost tracking, semantic caching |
 | D-009 | AI never in the critical path | Compliance and tax calculations are deterministic rules; AI handles NL, extraction, advice, reports |
 | D-010 | Jurisdiction-agnostic data model | `jurisdiction_rules` with `jurisdiction_type` ENUM supports states, counties, cities, territories, future international |
-| D-049 | Two-pass Citations extraction | Pass 1 locates citation spans, pass 2 validates against schema — auditable LLM extraction with verbatim source provenance |
+| D-049 | Two-pass Citations extraction | Pass 1 locates citation spans, pass 2 validates against schema, yielding auditable LLM extraction with verbatim source provenance |
 
 See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 
@@ -140,7 +140,7 @@ See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 - **285 commits, 54 Postgres migrations, 1,273 tests** across the FastAPI backend
 - **32 compliance rule keys, 52 golden eval fixtures** gating regressions in CI
 - **9 GitHub Actions workflows** including nightly smoke tests, security scans, agentshield, and Copilot rereview automation
-- **Production deployed** — API on Railway, web on Vercel, Supabase us-east-1
+- **Production deployed**: API on Railway, web on Vercel, Supabase us-east-1
 - **Daily and global LLM budget caps** with Sentry PII-scrubbed observability
 
 ## Project Status
@@ -156,4 +156,4 @@ See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 
 **Built by [James Shehan](https://jamesshehan.dev)** · TPM / Solutions Architect
 
-📬 [Request source code access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20—%20Ratify) for interview review
+📬 [Request source code access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify) for interview review
