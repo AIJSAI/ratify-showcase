@@ -1,10 +1,10 @@
 # Ratify
 
-> Production multi-tenant compliance SaaS for wine, beer, and spirits producers: automated tax filing, real-time order gating, and regulatory intelligence across all 51 US jurisdictions.
+> Production multi-tenant compliance SaaS for wine, beer, and spirits producers: real-time order gating and regulatory intelligence across all 51 US jurisdictions, with a deterministic rules engine that underpins future filing automation.
 
 ---
 
-**This repository documents the architecture and design decisions for Ratify. Source code is available upon request for interview processes.**
+**This repository documents the architecture and design decisions for Ratify. Source code is available on request.**
 
 📄 [Portfolio](https://jamesshehan.dev) · 📬 [Request Source Access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify)
 
@@ -130,7 +130,7 @@ flowchart LR
 | D-008 | LiteLLM for model-agnostic AI | 100+ providers, automatic fallback during AI outages, cost tracking, semantic caching |
 | D-009 | AI never in the critical path | Compliance and tax calculations are deterministic rules; AI handles NL, extraction, advice, reports |
 | D-010 | Jurisdiction-agnostic data model | `jurisdiction_rules` with `jurisdiction_type` ENUM supports states, counties, cities, territories, future international |
-| D-049 | Two-pass Citations extraction | Pass 1 locates citation spans, pass 2 validates against schema, yielding auditable LLM extraction with verbatim source provenance |
+| D-049 | Two-pass Citations extraction | Pass 1 locates citation spans; pass 2 validates against schema, yielding auditable LLM extraction with verbatim source provenance |
 
 See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 
@@ -156,4 +156,4 @@ See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 
 **Built by [James Shehan](https://jamesshehan.dev)** · TPM / Solutions Architect
 
-📬 [Request source code access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify) for interview review
+📬 [Request source access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify)
