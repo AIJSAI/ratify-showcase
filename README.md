@@ -1,6 +1,6 @@
 # Ratify
 
-> Production multi-tenant compliance SaaS for wine, beer, and spirits producers: real-time order gating and regulatory intelligence across all 51 US jurisdictions, with a deterministic rules engine that underpins future filing automation.
+> A personal project: a multi-tenant compliance engine exploring real-time order gating and regulatory intelligence across all 51 US jurisdictions, built on a deterministic rules engine.
 
 ---
 
@@ -17,13 +17,13 @@ Selling beverage alcohol in the US means complying with a maze of federal and st
 - **50 states + DC**, each with different licenses, tax rates, volume limits, product restrictions, filing frequencies, and dry communities
 - **Two distribution channels** (direct-to-consumer and three-tier wholesale), each with its own rule set
 - **Constant regulatory change**: 10+ compliance alerts per year from the Wine Institute alone
-- **Zero affordable automation**: Sovos ShipCompliant sells eight separate products at enterprise prices; small producers fall back to spreadsheets, consultants, and lawyers
+- **Fragmented tooling**: existing compliance tools are enterprise-priced and split across many products; smaller producers fall back to spreadsheets, consultants, and lawyers
 
-82% of US wineries produce fewer than 5,000 cases per year. They can't afford $500+/month compliance software or $200-400/hour consultants. The same maze hits breweries, cideries, and distilleries.
+Most small producers lack the budget for enterprise compliance software or specialized consultants. The same regulatory maze hits breweries, cideries, and distilleries.
 
 ## Architecture
 
-Ratify is a **split-backend SaaS**: a long-running FastAPI service on Railway carries the compliance engine, AI extraction pipeline, and background workers; a Next.js dashboard on Vercel handles the user-facing surface; Supabase Postgres holds tenant data with Row-Level Security and pgvector-backed regulatory RAG.
+Ratify is a **split-backend application**: a long-running FastAPI service on Railway carries the compliance engine, AI extraction pipeline, and background workers; a Next.js dashboard on Vercel handles the user-facing surface; Supabase Postgres holds tenant data with Row-Level Security and pgvector-backed regulatory RAG.
 
 ```mermaid
 flowchart LR
@@ -117,7 +117,7 @@ flowchart LR
 
 ### 3. Multi-Tenant Isolation With pgvector
 
-**Challenge**: B2B SaaS requires per-tenant data isolation. pgvector HNSW indexes return candidates *before* SQL WHERE filters apply, so a naive query for "tax rules" could surface another tenant's documents in the candidate set before filtering them out.
+**Challenge**: Multi-tenant isolation requires per-tenant data separation. pgvector HNSW indexes return candidates *before* SQL WHERE filters apply, so a naive query for "tax rules" could surface another tenant's documents in the candidate set before filtering them out.
 
 **Solution**: Row-Level Security at the database layer (D-007). Every tenant-scoped table carries a `tenant_id` column with an RLS policy keyed off `auth.uid()`. The hybrid search RPC applies the tenant filter *inside* the search query, not as a post-filter. Connection-level tenant context is set via `set_config('app.tenant_id', ...)` at request start. Combined with jurisdiction-agnostic data modelling (D-010), isolation holds even as the data model evolves to support new jurisdictions and beverage categories.
 
@@ -140,7 +140,7 @@ See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 - **285 commits, 54 Postgres migrations, 1,273 tests** across the FastAPI backend
 - **32 compliance rule keys, 52 golden eval fixtures** gating regressions in CI
 - **9 GitHub Actions workflows** including nightly smoke tests, security scans, agentshield, and Copilot rereview automation
-- **Production deployed**: API on Railway, web on Vercel, Supabase us-east-1
+- **Deployed**: API on Railway, web on Vercel, Supabase us-east-1
 - **Daily and global LLM budget caps** with Sentry PII-scrubbed observability
 
 ## Project Status
