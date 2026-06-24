@@ -1,6 +1,6 @@
 # Ratify
 
-> A personal project: a multi-tenant compliance engine exploring real-time order gating and regulatory intelligence across all 51 US jurisdictions, built on a deterministic rules engine.
+> A personal project: a multi-tenant compliance engine I built and run in production. It does real-time order gating and regulatory intelligence across all 51 US jurisdictions, on a deterministic rules engine.
 
 ---
 
