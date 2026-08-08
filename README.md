@@ -1,12 +1,12 @@
 # Ratify
 
-> Production multi-tenant compliance SaaS for wine, beer, and spirits producers: real-time order gating and regulatory intelligence across all 51 US jurisdictions, with a deterministic rules engine that underpins future filing automation.
+> Production multi-tenant compliance platform for wine, beer, and spirits producers: real-time order gating and regulatory intelligence across all 51 US jurisdictions, with a deterministic rules engine that underpins future filing automation.
 
 ---
 
-**This repository documents the architecture and design decisions for Ratify. Source code is available on request.**
+**This repository documents the architecture and design decisions for Ratify. The implementation is private.**
 
-📄 [Portfolio](https://jamesshehan.dev) · 📬 [Request Source Access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify)
+📄 [Portfolio](https://jamesshehan.dev)
 
 ---
 
@@ -17,9 +17,9 @@ Selling beverage alcohol in the US means complying with a maze of federal and st
 - **50 states + DC**, each with different licenses, tax rates, volume limits, product restrictions, filing frequencies, and dry communities
 - **Two distribution channels** (direct-to-consumer and three-tier wholesale), each with its own rule set
 - **Constant regulatory change**: 10+ compliance alerts per year from the Wine Institute alone
-- **Zero affordable automation**: Sovos ShipCompliant sells eight separate products at enterprise prices; small producers fall back to spreadsheets, consultants, and lawyers
+- **Zero affordable automation**: Sovos ShipCompliant sells eight separate products at enterprise prices; small producers fall back to spreadsheets and manual research
 
-82% of US wineries produce fewer than 5,000 cases per year. They can't afford $500+/month compliance software or $200-400/hour consultants. The same maze hits breweries, cideries, and distilleries.
+82% of US wineries produce fewer than 5,000 cases per year. They can't afford $500+/month enterprise compliance software. The same maze hits breweries, cideries, and distilleries.
 
 ## Architecture
 
@@ -83,7 +83,7 @@ flowchart LR
 | **FastAPI on Railway** | Long-running compliance jobs, no serverless duration limits, full Python AI ecosystem |
 | **Next.js 16 on Vercel** | Server Components, edge rendering, fast dashboard surface |
 | **Rules Engine** | Deterministic compliance checks and tax calculations, sub-100ms, no LLM in the critical path |
-| **LiteLLM Proxy** | 100+ model providers, hard budget caps, per-tenant cost tracking, automatic fallback routing |
+| **LiteLLM Proxy** | Hard budget caps, per-tenant cost tracking; automatic fallback on non-citation calls (two-pass Citations extraction is Anthropic-specific) |
 | **Anthropic Citations API** | Two-pass extraction with verbatim source citations for auditable regulatory analysis |
 | **Supabase Postgres + RLS** | Row-Level Security multi-tenancy, pgvector for RAG, temporal tables for audit reconstruction |
 
@@ -96,7 +96,7 @@ flowchart LR
 | Supabase (Postgres) | Database | RLS multi-tenancy, pgvector for RAG, temporal tables for audit, SOC 2 on Team plan |
 | pgvector | Regulatory RAG | Native Postgres extension, HNSW indexing, no separate vector DB |
 | Anthropic Claude Sonnet 4.6 / Haiku 4.5 | LLM tier | Sonnet for extraction quality, Haiku for cost-tiered routine work, ephemeral prompt caching |
-| LiteLLM Proxy | Model routing | 100+ providers, hard budget caps, semantic caching, automatic fallback for AI outages |
+| LiteLLM Proxy | Model routing | Hard budget caps, semantic caching; fallback covers non-citation calls (the Citations path is Anthropic-specific) |
 | Sentry | Observability | PII-scrubbed exception tracking, integrated with FastAPI middleware |
 | GitHub Actions | CI/CD | Nine workflows including nightly smoke, security scans, dependabot auto-merge |
 | Commerce7 / ShipStation / FedEx | Integrations | DTC platform connectivity, fulfillment, carrier compliance |
@@ -127,7 +127,7 @@ flowchart LR
 |---------|--------|-----------|
 | D-006 | Split Architecture (FastAPI + Next.js, not monolith) | Vercel function duration limits and read-only filesystem are incompatible with multi-minute filing batch jobs and report generation |
 | D-007 | PostgreSQL on Supabase | RLS multi-tenancy, pgvector RAG, temporal audit tables, SOC 2 on Team plan |
-| D-008 | LiteLLM for model-agnostic AI | 100+ providers, automatic fallback during AI outages, cost tracking, semantic caching |
+| D-008 | LiteLLM as the model gateway | Hard budget caps, cost tracking, semantic caching; fallback scoped to non-citation calls, since two-pass Citations extraction is Anthropic-specific |
 | D-009 | AI never in the critical path | Compliance and tax calculations are deterministic rules; AI handles NL, extraction, advice, reports |
 | D-010 | Jurisdiction-agnostic data model | `jurisdiction_rules` with `jurisdiction_type` ENUM supports states, counties, cities, territories, future international |
 | D-049 | Two-pass Citations extraction | Pass 1 locates citation spans; pass 2 validates against schema, yielding auditable LLM extraction with verbatim source provenance |
@@ -136,8 +136,8 @@ See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 
 ## Results
 
-- **51 of 51 US jurisdictions** (50 states + DC) with judge-grade HIGH-confidence wine direct-to-consumer compliance extractors
-- **285 commits, 54 Postgres migrations, 1,273 tests** across the FastAPI backend
+- **Wine DTC compliance extraction across all 51 US jurisdictions** (50 states + DC), graded HIGH-confidence at extraction time
+- **54 Postgres migrations, 1,273 automated tests** across the FastAPI backend
 - **32 compliance rule keys, 52 golden eval fixtures** gating regressions in CI
 - **9 GitHub Actions workflows** including nightly smoke tests, security scans, agentshield, and Copilot rereview automation
 - **Production deployed**: API on Railway, web on Vercel, Supabase us-east-1
@@ -150,10 +150,8 @@ See [docs/tech-decisions.md](docs/tech-decisions.md) for detailed excerpts.
 | Wave 1: Foundation | ✅ | Multi-tenant schema, RLS policies, FastAPI scaffold, Next.js dashboard |
 | Wave 2: Tier-A Core | ✅ | Core extractors, rules engine, Citations integration, ingestion pipeline |
 | Wave 3: 51 Jurisdictions | ✅ | Tier-3A/3B/3C/3D state extractors, golden fixtures, signed evidence artifacts |
-| Application Layer | 🚧 | Tenant invites, RBAC, order gating UI, filing automation, billing |
 
 ---
 
 **Built by [James Shehan](https://jamesshehan.dev)** · TPM / Solutions Architect
 
-📬 [Request source access](mailto:james@jamesshehan.dev?subject=Source%20Access%20Request%20-%20Ratify)
