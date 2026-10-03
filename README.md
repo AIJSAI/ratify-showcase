@@ -15,9 +15,9 @@
 Selling beverage alcohol in the US means complying with federal rules and the rules of 50 states plus DC:
 
 - **50 states + DC**, each with different licenses, tax rates, volume limits, product restrictions, filing frequencies, and dry communities
-- **Two distribution channels** (direct-to-consumer and three-tier wholesale), each with its own rule set
+- **Two distribution channels** (direct-to-consumer shipping, and three-tier wholesale through distributors and retailers), each with its own rule set
 - **Constant regulatory change** across 51 jurisdictions
-- **Scattered sources**: the rules live in state statutes, federal TTB rulings and state revenue-department bulletins across 50+ government sites, so producers often fall back to spreadsheets and manual research
+- **Scattered sources**: the rules live in state statutes, federal Alcohol and Tobacco Tax and Trade Bureau (TTB) rulings and state revenue-department bulletins across 50+ government sites, so producers often fall back to spreadsheets and manual research
 
 The same rules reach wineries, breweries, cideries and distilleries.
 
